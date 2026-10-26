@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Задачі</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:var(--tg-theme-bg-color,#ffffff);
+  --text:var(--tg-theme-text-color,#111111);
+  --hint:var(--tg-theme-hint-color,#8a8a8e);
+  --accent:var(--tg-theme-button-color,#2a8af6);
+  --accent-text:var(--tg-theme-button-text-color,#ffffff);
+  --card:var(--tg-theme-secondary-bg-color,#f2f2f6);
+  --danger:var(--tg-theme-destructive-text-color,#e5484d);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:var(--tg-theme-bg-color,#17181b);
+    --text:var(--tg-theme-text-color,#f2f2f2);
+    --hint:var(--tg-theme-hint-color,#8d8f96);
+    --card:var(--tg-theme-secondary-bg-color,#232428);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:96px;min-height:100vh}
+button{font:inherit;cursor:pointer}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:12px;border-bottom:1px solid var(--card)}
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px}
+.nav{width:42px;height:42px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:22px;line-height:1}
+.date{flex:1;border:0;background:none;color:var(--text);text-align:center;padding:0}
+.date b{display:block;font-size:17px;font-weight:600}
+.date small{color:var(--hint);font-size:13px}
+.progress{height:4px;background:var(--card);border-radius:2px;margin:10px 16px 0;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+
+.levels{padding:6px 0 8px}
+.chips{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.branch{flex:none;color:var(--hint);font-size:15px;margin-right:-2px}
+.chip{flex:none;display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:18px;border:0;background:var(--card);color:var(--text);font-size:14px;white-space:nowrap}
+.chips.sub .chip{padding:5px 11px;font-size:13px}
+.chip.on{background:var(--accent);color:var(--accent-text)}
+.chip.parent-on{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.chip.add-p{background:none;color:var(--accent);font-weight:600;padding-left:4px;padding-right:4px}
+.chip .n{opacity:.6;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+main{padding:0 16px}
+.group{display:flex;align-items:center;gap:6px;margin:16px 2px 6px;font-size:12px;color:var(--hint);text-transform:uppercase;letter-spacing:.05em}
+.task{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:14px;margin-bottom:8px;animation:in .18s ease}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.check{width:24px;height:24px;flex:none;border-radius:50%;border:2px solid var(--hint);background:none;padding:0;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.check svg{opacity:0;transition:opacity .15s}
+.task.done .check{background:var(--accent);border-color:var(--accent)}
+.task.done .check svg{opacity:1}
+.txt{flex:1;min-width:0;word-break:break-word}
+.task.done .txt{text-decoration:line-through;color:var(--hint)}
+.del{border:0;background:none;color:var(--hint);font-size:22px;line-height:1;padding:0 4px}
+.empty{text-align:center;color:var(--hint);padding:48px 0;font-size:15px}
+.carry{width:100%;margin:12px 0 0;padding:11px;border-radius:12px;border:1px dashed var(--accent);background:none;color:var(--accent);font-size:14px}
+
+form.add{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--card)}
+.add input,.add select{height:44px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:16px;padding:0 12px;outline:none}
+.add input{flex:1;min-width:0}
+.add select{max-width:130px;-webkit-appearance:none;appearance:none}
+.add button{width:44px;height:44px;flex:none;border:0;border-radius:12px;background:var(--accent);color:var(--accent-text);font-size:26px;line-height:1}
+
+.sheet{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end}
+.sheet.hidden{display:none}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.sheet-box{position:relative;width:100%;background:var(--bg);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet-box h3{margin:0 0 4px;font-size:17px}
+.sheet-box .sub{margin:0 0 12px;color:var(--hint);font-size:13px}
+.sheet-box input{width:100%;height:46px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:16px;padding:0 12px;outline:none}
+.swatches{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 18px}
+.sw{width:32px;height:32px;border-radius:50%;border:3px solid transparent;padding:0}
+.sw.on{border-color:var(--text)}
+.row{display:flex;gap:10px}
+.btn{flex:1;height:46px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-text);font-weight:600}
+.btn.ghost{background:var(--card);color:var(--danger)}
+.btn.hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="datebar">
+    <button class="nav" id="prev" aria-label="Попередній день">‹</button>
+    <button class="date" id="dateBtn"><b id="dateLabel"></b><small id="dateSub"></small></button>
+    <button class="nav" id="next" aria-label="Наступний день">›</button>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="levels" id="levels"></div>
+</header>
+
+<main id="list"></main>
+
+<form class="add" id="addForm" autocomplete="off">
+  <select id="projSel" aria-label="Проєкт"></select>
+  <input id="taskInput" placeholder="Нова задача…" maxlength="200" enterkeyhint="done">
+  <button type="submit" aria-label="Додати">+</button>
+</form>
+
+<div class="sheet hidden" id="sheet">
+  <div class="sheet-bg" id="sheetBg"></div>
+  <div class="sheet-box">
+    <h3 id="sheetTitle">Новий проєкт</h3>
+    <p class="sub" id="sheetSub"></p>
+    <input id="sheetName" maxlength="40" placeholder="Назва">
+    <div class="swatches" id="swatches"></div>
+    <div class="row">
+      <button class="btn ghost" id="sheetDel">Видалити</button>
+      <button class="btn" id="sheetSave">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+const ver = v => !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v));
+const useCloud = !!(tg && tg.initData && ver('6.9'));
+if (tg) { tg.ready(); tg.expand(); }
+
+const store = {
+  get(k){ return new Promise(r => {
+    if (useCloud) tg.CloudStorage.getItem(k, (e, v) => r(e ? null : (v || null)));
+    else { try { r(localStorage.getItem(k)); } catch { r(null); } }
+  });},
+  set(k, v){ return new Promise(r => {
+    if (useCloud) tg.CloudStorage.setItem(k, v, () => r());
+    else { try { localStorage.setItem(k, v); } catch {} r(); }
+  });}
+};
+const parse = (s, d) => { try { return s ? JSON.parse(s) : d; } catch { return d; } };
+const haptic = (t='light') => { if (ver('6.1')) tg.HapticFeedback.impactOccurred(t); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const $ = id => document.getElementById(id);
+const ymd = d => { const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth()+1) + '-' + z(d.getDate()); };
+const fromYmd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const shift = (s, n) => { const d = fromYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const today = () => ymd(new Date());
+
+const COLORS = ['#2a8af6','#30a46c','#f76b15','#e5484d','#8e4ec6','#12a594','#d6409f','#e2a400'];
+const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-text)"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+// projects: {id, name, color, parent: id|null}
+let projects = [], tasks = [], date = today(), path = [], loadToken = 0, lastSelFilter = null;
+const filter = () => path.length ? path[path.length - 1] : 'all';
+
+// ---- tree helpers ----
+const byId = id => projects.find(p => p.id === id);
+const kids = pid => projects.filter(p => (p.parent || null) === pid);
+function dfs(pid = null, depth = 0, out = []){ kids(pid).forEach(p => { out.push({ p, depth }); dfs(p.id, depth + 1, out); }); return out; }
+function subtree(id){ const s = new Set([id]); dfs(id).forEach(x => s.add(x.p.id)); return s; }
+function chain(id){ const out = []; let p = byId(id), guard = 0; while (p && guard++ < 50) { out.unshift(p); p = byId(p.parent); } return out; }
+
+function visibleTasks(){
+  const f = filter();
+  if (f === 'all') return tasks;
+  const ids = subtree(f);
+  return tasks.filter(x => ids.has(x.pid));
+}
+
+// ---- storage ----
+async function saveProjects(){ await store.set('projects', JSON.stringify(projects)); }
+async function saveDay(d = date, list = tasks){ await store.set('d_' + d, JSON.stringify(list)); }
+async function loadDay(){
+  const t = ++loadToken;
+  const list = parse(await store.get('d_' + date), []);
+  if (t !== loadToken) return;
+  tasks = list;
+  render();
+}
+
+// ---- render ----
+function renderHeader(){
+  const d = fromYmd(date), t = today();
+  const label = d.toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long' });
+  $('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+  const rel = date === t ? 'Сьогодні' : date === shift(t, 1) ? 'Завтра' : date === shift(t, -1) ? 'Вчора' : 'Натисни — повернутись на сьогодні';
+  const vis = visibleTasks(), done = vis.filter(x => x.done).length;
+  $('dateSub').textContent = vis.length ? `${rel} · ${done}/${vis.length}` : rel;
+  $('bar').style.width = vis.length ? (done / vis.length * 100) + '%' : '0';
+}
+
+function countOpen(id){ const ids = subtree(id); return tasks.filter(x => !x.done && ids.has(x.pid)).length; }
+
+function chip(row, { label, on, parentOn, color, count, cls = '', onClick }){
+  const b = document.createElement('button');
+  b.className = 'chip ' + cls + (on ? ' on' : '') + (parentOn ? ' parent-on' : '');
+  if (color) { const d = document.createElement('span'); d.className = 'dot'; d.style.background = on ? 'var(--accent-text)' : color; b.append(d); }
+  b.append(document.createTextNode(label));
+  if (count) { const n = document.createElement('span'); n.className = 'n'; n.textContent = count; b.append(n); }
+  b.onclick = onClick;
+  row.append(b);
+}
+
+function renderLevels(){
+  const box = $('levels'); box.innerHTML = '';
+  // level 0 + one level under each selected node
+  const parents = [null, ...path];
+  parents.forEach((pid, level) => {
+    const row = document.createElement('div');
+    row.className = 'chips' + (level ? ' sub' : '');
+    if (level) row.style.paddingLeft = (16 + (level - 1) * 14) + 'px';
+    const children = kids(pid);
+    if (level) { const br = document.createElement('span'); br.className = 'branch'; br.textContent = '↳'; row.append(br); }
+
+    if (level === 0) {
+      chip(row, { label: 'Всі', on: path.length === 0, onClick: () => { path = []; haptic(); render(); } });
+    } else if (children.length) {
+      chip(row, { label: 'Усе', on: path.length === level, onClick: () => { path = path.slice(0, level); haptic(); render(); } });
+    }
+    children.forEach(c => {
+      const selectedHere = path[level] === c.id;
+      const isLeafSel = selectedHere && path.length === level + 1;
+      chip(row, {
+        label: c.name, color: c.color, count: countOpen(c.id),
+        on: isLeafSel, parentOn: selectedHere && !isLeafSel,
+        onClick: () => {
+          if (isLeafSel) return openSheet(c);
+          path = [...path.slice(0, level), c.id]; haptic(); render();
+        }
+      });
+    });
+    chip(row, {
+      label: level ? '+ Підпроєкт' : '+ Проєкт', cls: 'add-p',
+      onClick: () => openSheet(null, pid)
+    });
+    box.append(row);
+  });
+}
+
+function taskEl(t){
+  const row = document.createElement('div');
+  row.className = 'task' + (t.done ? ' done' : '');
+  const c = document.createElement('button'); c.className = 'check'; c.innerHTML = CHECK; c.setAttribute('aria-label', 'Виконано');
+  const s = document.createElement('div'); s.className = 'txt'; s.textContent = t.text;
+  const d = document.createElement('button'); d.className = 'del'; d.textContent = '×'; d.setAttribute('aria-label', 'Видалити');
+  c.onclick = s.onclick = () => toggle(t.id);
+  d.onclick = () => removeTask(t.id);
+  row.append(c, s, d);
+  return row;
+}
+const sortTasks = arr => [...arr.filter(x => !x.done), ...arr.filter(x => x.done)];
+
+function groupHeader(box, color, text){
+  const h = document.createElement('div'); h.className = 'group';
+  const d = document.createElement('span'); d.className = 'dot'; d.style.background = color;
+  h.append(d, document.createTextNode(text));
+  box.append(h);
+}
+
+function renderList(){
+  const box = $('list'); box.innerHTML = '';
+  const f = filter();
+  const undone = tasks.filter(x => !x.done);
+  if (date < today() && undone.length) {
+    const b = document.createElement('button'); b.className = 'carry';
+    b.textContent = `Перенести незроблені (${undone.length}) на сьогодні →`;
+    b.onclick = carryOver; box.append(b);
+  }
+
+  const vis = visibleTasks();
+  if (!vis.length) {
+    box.insertAdjacentHTML('beforeend', f === 'all'
+      ? '<div class="empty">На цей день задач немає.<br>Додай першу внизу 👇</div>'
+      : '<div class="empty">Тут поки пусто.<br>Натисни на виділений проєкт ще раз, щоб змінити його.</div>');
+    return;
+  }
+
+  // nodes in tree order
+  const nodes = f === 'all' ? dfs(null).map(x => x.p) : [byId(f), ...dfs(f).map(x => x.p)];
+  const base = f === 'all' ? 0 : chain(f).length;
+  const groups = nodes.map(p => ({ p, items: vis.filter(x => x.pid === p.id) })).filter(g => g.items.length);
+  if (f === 'all') {
+    const orphans = tasks.filter(x => !byId(x.pid));
+    if (orphans.length) groups.push({ p: null, items: orphans });
+  }
+  const single = groups.length === 1 && groups[0].p && groups[0].p.id === f;
+
+  groups.forEach(g => {
+    if (!single) {
+      if (!g.p) groupHeader(box, 'var(--hint)', 'Без проєкту');
+      else {
+        const names = g.p.id === f ? [g.p.name] : chain(g.p.id).slice(base).map(n => n.name);
+        groupHeader(box, g.p.color, names.join(' › '));
+      }
+    } else box.insertAdjacentHTML('beforeend', '<div style="height:12px"></div>');
+    sortTasks(g.items).forEach(x => box.append(taskEl(x)));
+  });
+}
+
+function renderSelect(){
+  const sel = $('projSel'), f = filter();
+  const opts = f === 'all' ? dfs(null) : [{ p: byId(f), depth: 0 }, ...dfs(f, 1)];
+  const prev = sel.value;
+  sel.innerHTML = '';
+  opts.forEach(({ p, depth }) => {
+    const o = document.createElement('option'); o.value = p.id;
+    o.textContent = '\u00A0\u00A0'.repeat(depth) + (depth ? '↳ ' : '') + p.name;
+    sel.append(o);
+  });
+  if (lastSelFilter !== f) { sel.value = f === 'all' ? (opts[0] && opts[0].p.id) : f; lastSelFilter = f; }
+  else if (opts.some(o => o.p.id === prev)) sel.value = prev;
+  sel.style.display = opts.length > 1 ? '' : 'none';
+}
+
+function render(){ path = path.filter(byId); renderHeader(); renderLevels(); renderList(); renderSelect(); }
+
+// ---- actions ----
+async function toggle(id){
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  t.done = !t.done; haptic(t.done ? 'medium' : 'light');
+  render(); await saveDay();
+}
+async function removeTask(id){
+  tasks = tasks.filter(x => x.id !== id); haptic();
+  render(); await saveDay();
+}
+async function carryOver(){
+  const t = today(), moving = tasks.filter(x => !x.done);
+  const target = parse(await store.get('d_' + t), []);
+  moving.forEach(x => target.push({ ...x, id: uid() }));
+  tasks = tasks.filter(x => x.done);
+  await saveDay(t, target); await saveDay();
+  haptic('medium');
+  date = t; loadDay();
+}
+
+$('addForm').onsubmit = async e => {
+  e.preventDefault();
+  const inp = $('taskInput'), text = inp.value.trim();
+  if (!text) return;
+  const sel = $('projSel'), f = filter();
+  const pid = (sel.style.display !== 'none' && sel.value) || (f !== 'all' ? f : (projects[0] && projects[0].id));
+  tasks.push({ id: uid(), text, pid, done: false });
+  inp.value = ''; haptic();
+  render(); await saveDay();
+};
+
+$('prev').onclick = () => { date = shift(date, -1); haptic(); loadDay(); };
+$('next').onclick = () => { date = shift(date, 1); haptic(); loadDay(); };
+$('dateBtn').onclick = () => { if (date !== today()) { date = today(); haptic(); loadDay(); } };
+
+// ---- project sheet ----
+let editing = null, newParent = null, pickColor = COLORS[0];
+function drawSwatches(){
+  const box = $('swatches'); box.innerHTML = '';
+  COLORS.forEach(c => {
+    const b = document.createElement('button'); b.className = 'sw' + (c === pickColor ? ' on' : '');
+    b.style.background = c; b.onclick = () => { pickColor = c; drawSwatches(); };
+    box.append(b);
+  });
+}
+function openSheet(p, parentId = null){
+  editing = p; newParent = p ? null : parentId;
+  const par = byId(p ? p.parent : parentId);
+  $('sheetTitle').textContent = p ? (p.parent ? 'Підпроєкт' : 'Проєкт') : (parentId ? 'Новий підпроєкт' : 'Новий проєкт');
+  $('sheetSub').textContent = par ? 'У: ' + chain(par.id).map(n => n.name).join(' › ') : '';
+  $('sheetSub').style.display = par ? '' : 'none';
+  $('sheetName').value = p ? p.name : '';
+  pickColor = p ? p.color : (par ? par.color : COLORS[kids(null).length % COLORS.length]);
+  $('sheetDel').classList.toggle('hidden', !p || projects.length < 2);
+  drawSwatches();
+  $('sheet').classList.remove('hidden');
+  setTimeout(() => $('sheetName').focus(), 50);
+}
+const closeSheet = () => { $('sheet').classList.add('hidden'); editing = null; newParent = null; };
+$('sheetBg').onclick = closeSheet;
+$('sheetSave').onclick = async () => {
+  const name = $('sheetName').value.trim(); if (!name) return $('sheetName').focus();
+  if (editing) { editing.name = name; editing.color = pickColor; }
+  else {
+    const p = { id: uid(), name, color: pickColor, parent: newParent || null };
+    projects.push(p);
+    path = chain(p.id).map(n => n.id);
+  }
+  closeSheet(); haptic('medium'); render(); await saveProjects();
+};
+$('sheetName').onkeydown = e => { if (e.key === 'Enter') $('sheetSave').click(); };
+$('sheetDel').onclick = () => {
+  const p = editing; if (!p) return;
+  const hasKids = kids(p.id).length > 0;
+  const msg = `Видалити «${p.name}»?` + (hasKids ? ' Його підпроєкти піднімуться на рівень вище.' : '') + ' Задачі залишаться в «Без проєкту».';
+  const doDelete = async ok => {
+    if (!ok) return;
+    kids(p.id).forEach(k => { k.parent = p.parent || null; });
+    projects = projects.filter(x => x.id !== p.id);
+    const i = path.indexOf(p.id); if (i >= 0) path = path.slice(0, i);
+    closeSheet(); render(); await saveProjects();
+  };
+  if (ver('6.2')) tg.showConfirm(msg, doDelete); else doDelete(confirm(msg));
+};
+
+// ---- start ----
+(async () => {
+  projects = parse(await store.get('projects'), []);
+  projects.forEach(p => { if (p.parent === undefined) p.parent = null; });
+  if (!projects.length) { projects = [{ id: uid(), name: 'Загальне', color: COLORS[0], parent: null }]; await saveProjects(); }
+  await loadDay();
+})();
+</script>
+</body>
+</html>
