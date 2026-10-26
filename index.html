@@ -28,7 +28,10 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-
 body{padding-bottom:96px;min-height:100vh}
 button{font:inherit;cursor:pointer}
 
-header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:12px;border-bottom:1px solid var(--card)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:10px;border-bottom:1px solid var(--card)}
+.tabs{display:flex;gap:4px;margin:0 16px 10px;padding:3px;border-radius:12px;background:var(--card)}
+.tab{flex:1;height:34px;border:0;border-radius:9px;background:none;color:var(--hint);font-size:15px;font-weight:600}
+.tab.on{background:var(--bg);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .datebar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px}
 .nav{width:42px;height:42px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:22px;line-height:1}
 .date{flex:1;border:0;background:none;color:var(--text);text-align:center;padding:0}
@@ -36,6 +39,10 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:12px;bor
 .date small{color:var(--hint);font-size:13px}
 .progress{height:4px;background:var(--card);border-radius:2px;margin:10px 16px 0;overflow:hidden}
 .progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.listhead{padding:0 16px;display:flex;align-items:baseline;justify-content:space-between}
+.listhead b{font-size:17px}
+.listhead small{color:var(--hint);font-size:13px}
+.hidden{display:none !important}
 
 .levels{padding:6px 0 8px}
 .chips{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 16px;scrollbar-width:none}
@@ -51,49 +58,67 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:12px;bor
 
 main{padding:0 16px}
 .group{display:flex;align-items:center;gap:6px;margin:16px 2px 6px;font-size:12px;color:var(--hint);text-transform:uppercase;letter-spacing:.05em}
+.group.warn{color:var(--danger)}
 .task{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:14px;margin-bottom:8px;animation:in .18s ease}
 @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .check{width:24px;height:24px;flex:none;border-radius:50%;border:2px solid var(--hint);background:none;padding:0;display:grid;place-items:center;transition:background .15s,border-color .15s}
 .check svg{opacity:0;transition:opacity .15s}
 .task.done .check{background:var(--accent);border-color:var(--accent)}
 .task.done .check svg{opacity:1}
-.txt{flex:1;min-width:0;word-break:break-word}
+.body{flex:1;min-width:0;cursor:pointer}
+.txt{word-break:break-word}
 .task.done .txt{text-decoration:line-through;color:var(--hint)}
-.del{border:0;background:none;color:var(--hint);font-size:22px;line-height:1;padding:0 4px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;font-size:12px;color:var(--hint)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.meta .late{color:var(--danger)}
+.meta .dot{width:7px;height:7px}
+.edit{flex:none;color:var(--hint);font-size:18px;line-height:1}
 .empty{text-align:center;color:var(--hint);padding:48px 0;font-size:15px}
-.carry{width:100%;margin:12px 0 0;padding:11px;border-radius:12px;border:1px dashed var(--accent);background:none;color:var(--accent);font-size:14px}
+.carry,.more{width:100%;margin:12px 0 0;padding:11px;border-radius:12px;border:1px dashed var(--accent);background:none;color:var(--accent);font-size:14px}
+.more{border-style:solid;border-color:var(--card);color:var(--hint)}
 
 form.add{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--card)}
 .add input,.add select{height:44px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:16px;padding:0 12px;outline:none}
 .add input{flex:1;min-width:0}
-.add select{max-width:130px;-webkit-appearance:none;appearance:none}
+.add select{max-width:120px;-webkit-appearance:none;appearance:none}
 .add button{width:44px;height:44px;flex:none;border:0;border-radius:12px;background:var(--accent);color:var(--accent-text);font-size:26px;line-height:1}
 
 .sheet{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end}
-.sheet.hidden{display:none}
 .sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.4)}
-.sheet-box{position:relative;width:100%;background:var(--bg);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet-box{position:relative;width:100%;max-height:90vh;overflow-y:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
 .sheet-box h3{margin:0 0 4px;font-size:17px}
 .sheet-box .sub{margin:0 0 12px;color:var(--hint);font-size:13px}
-.sheet-box input{width:100%;height:46px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:16px;padding:0 12px;outline:none}
+.field{width:100%;min-height:46px;border:0;border-radius:12px;background:var(--card);color:var(--text);font:inherit;font-size:16px;padding:12px;outline:none;-webkit-appearance:none;appearance:none}
+textarea.field{resize:none;line-height:1.35}
+.lbl{display:block;margin:14px 2px 6px;font-size:13px;color:var(--hint)}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+.quick button{flex:none;height:36px;padding:0 13px;border:0;border-radius:18px;background:var(--card);color:var(--text);font-size:14px}
+.quick button.on{background:var(--accent);color:var(--accent-text)}
+.quick input{flex:1;min-width:140px;height:36px;border:0;border-radius:18px;background:var(--card);color:var(--text);font:inherit;font-size:14px;padding:0 12px;outline:none}
 .swatches{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 18px}
 .sw{width:32px;height:32px;border-radius:50%;border:3px solid transparent;padding:0}
 .sw.on{border-color:var(--text)}
-.row{display:flex;gap:10px}
+.row{display:flex;gap:10px;margin-top:20px}
 .btn{flex:1;height:46px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-text);font-weight:600}
 .btn.ghost{background:var(--card);color:var(--danger)}
-.btn.hidden{display:none}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="datebar">
-    <button class="nav" id="prev" aria-label="Попередній день">‹</button>
-    <button class="date" id="dateBtn"><b id="dateLabel"></b><small id="dateSub"></small></button>
-    <button class="nav" id="next" aria-label="Наступний день">›</button>
+  <div class="tabs">
+    <button class="tab on" id="tabDay">День</button>
+    <button class="tab" id="tabList">Список</button>
   </div>
-  <div class="progress"><i id="bar"></i></div>
+  <div id="dayHead">
+    <div class="datebar">
+      <button class="nav" id="prev" aria-label="Попередній день">‹</button>
+      <button class="date" id="dateBtn"><b id="dateLabel"></b><small id="dateSub"></small></button>
+      <button class="nav" id="next" aria-label="Наступний день">›</button>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+  </div>
+  <div id="listHead" class="listhead hidden"><b>Усі задачі</b><small id="listSub"></small></div>
   <div class="levels" id="levels"></div>
 </header>
 
@@ -101,20 +126,43 @@ form.add{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:8px;p
 
 <form class="add" id="addForm" autocomplete="off">
   <select id="projSel" aria-label="Проєкт"></select>
-  <input id="taskInput" placeholder="Нова задача…" maxlength="200" enterkeyhint="done">
+  <input id="taskInput" placeholder="Нова задача…" maxlength="300" enterkeyhint="done">
   <button type="submit" aria-label="Додати">+</button>
 </form>
 
-<div class="sheet hidden" id="sheet">
-  <div class="sheet-bg" id="sheetBg"></div>
+<!-- project editor -->
+<div class="sheet hidden" id="pSheet">
+  <div class="sheet-bg" id="pBg"></div>
   <div class="sheet-box">
-    <h3 id="sheetTitle">Новий проєкт</h3>
-    <p class="sub" id="sheetSub"></p>
-    <input id="sheetName" maxlength="40" placeholder="Назва">
+    <h3 id="pTitle">Новий проєкт</h3>
+    <p class="sub" id="pSub"></p>
+    <input class="field" id="pName" maxlength="40" placeholder="Назва">
     <div class="swatches" id="swatches"></div>
+    <div class="row" style="margin-top:0">
+      <button class="btn ghost" id="pDel">Видалити</button>
+      <button class="btn" id="pSave">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<!-- task editor -->
+<div class="sheet hidden" id="tSheet">
+  <div class="sheet-bg" id="tBg"></div>
+  <div class="sheet-box">
+    <h3>Задача</h3>
+    <textarea class="field" id="tText" rows="2" maxlength="300" placeholder="Що зробити"></textarea>
+    <label class="lbl" for="tProj">Проєкт</label>
+    <select class="field" id="tProj"></select>
+    <label class="lbl">День</label>
+    <div class="quick" id="tQuick">
+      <button type="button" data-q="none">Без дати</button>
+      <button type="button" data-q="today">Сьогодні</button>
+      <button type="button" data-q="tomorrow">Завтра</button>
+      <input type="date" id="tDate" aria-label="Інша дата">
+    </div>
     <div class="row">
-      <button class="btn ghost" id="sheetDel">Видалити</button>
-      <button class="btn" id="sheetSave">Зберегти</button>
+      <button class="btn ghost" id="tDel">Видалити</button>
+      <button class="btn" id="tSave">Зберегти</button>
     </div>
   </div>
 </div>
@@ -133,6 +181,10 @@ const store = {
   set(k, v){ return new Promise(r => {
     if (useCloud) tg.CloudStorage.setItem(k, v, () => r());
     else { try { localStorage.setItem(k, v); } catch {} r(); }
+  });},
+  keys(){ return new Promise(r => {
+    if (useCloud) tg.CloudStorage.getKeys((e, k) => r(e ? [] : (k || [])));
+    else { try { r(Object.keys(localStorage)); } catch { r([]); } }
   });}
 };
 const parse = (s, d) => { try { return s ? JSON.parse(s) : d; } catch { return d; } };
@@ -143,52 +195,92 @@ const ymd = d => { const z = n => String(n).padStart(2, '0'); return d.getFullYe
 const fromYmd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
 const shift = (s, n) => { const d = fromYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
 const today = () => ymd(new Date());
+function dayLabel(s){
+  const t = today();
+  if (s === t) return 'Сьогодні';
+  if (s === shift(t, 1)) return 'Завтра';
+  if (s === shift(t, -1)) return 'Вчора';
+  return fromYmd(s).toLocaleDateString('uk-UA', { weekday:'short', day:'numeric', month:'short' });
+}
 
 const COLORS = ['#2a8af6','#30a46c','#f76b15','#e5484d','#8e4ec6','#12a594','#d6409f','#e2a400'];
 const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-text)"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
-// projects: {id, name, color, parent: id|null}
-let projects = [], tasks = [], date = today(), path = [], loadToken = 0, lastSelFilter = null;
+// projects: {id, name, color, parent}
+// tasks:    {id, text, pid|null, date:'YYYY-MM-DD'|null, done}
+let projects = [], tasks = [], date = today(), path = [], mode = 'day', showDone = false, lastSelKey = null;
 const filter = () => path.length ? path[path.length - 1] : 'all';
 
-// ---- tree helpers ----
+// ---- tree ----
 const byId = id => projects.find(p => p.id === id);
 const kids = pid => projects.filter(p => (p.parent || null) === pid);
 function dfs(pid = null, depth = 0, out = []){ kids(pid).forEach(p => { out.push({ p, depth }); dfs(p.id, depth + 1, out); }); return out; }
 function subtree(id){ const s = new Set([id]); dfs(id).forEach(x => s.add(x.p.id)); return s; }
-function chain(id){ const out = []; let p = byId(id), guard = 0; while (p && guard++ < 50) { out.unshift(p); p = byId(p.parent); } return out; }
+function chain(id){ const out = []; let p = byId(id), g = 0; while (p && g++ < 50) { out.unshift(p); p = byId(p.parent); } return out; }
 
-function visibleTasks(){
+function byProject(list){
   const f = filter();
-  if (f === 'all') return tasks;
+  if (f === 'all') return list;
   const ids = subtree(f);
-  return tasks.filter(x => ids.has(x.pid));
+  return list.filter(t => ids.has(t.pid));
 }
+const scopeTasks = () => mode === 'day' ? tasks.filter(t => t.date === date) : tasks;
 
-// ---- storage ----
+// ---- storage (chunked, Telegram limits each value to 4096 chars) ----
 async function saveProjects(){ await store.set('projects', JSON.stringify(projects)); }
-async function saveDay(d = date, list = tasks){ await store.set('d_' + d, JSON.stringify(list)); }
-async function loadDay(){
-  const t = ++loadToken;
-  const list = parse(await store.get('d_' + date), []);
-  if (t !== loadToken) return;
-  tasks = list;
-  render();
+let saving = false, dirty = false;
+async function saveTasks(){
+  dirty = true;
+  if (saving) return;
+  saving = true;
+  while (dirty) {
+    dirty = false;
+    const s = JSON.stringify(tasks), parts = [];
+    for (let i = 0; i < s.length; i += 3800) parts.push(s.slice(i, i + 3800));
+    if (!parts.length) parts.push('[]');
+    await Promise.all(parts.map((p, i) => store.set('t_' + i, p)));
+    await store.set('t_n', String(parts.length));
+  }
+  saving = false;
+}
+async function loadTasks(){
+  const n = parseInt(await store.get('t_n'), 10);
+  if (n > 0) {
+    const parts = await Promise.all(Array.from({ length: n }, (_, i) => store.get('t_' + i)));
+    return { list: parse(parts.join(''), []), migrated: false };
+  }
+  // migrate from the older per-day format
+  const keys = (await store.keys()).filter(k => /^d_\d{4}-\d{2}-\d{2}$/.test(k));
+  const out = [];
+  for (const k of keys) {
+    parse(await store.get(k), []).forEach(t => out.push({ id: t.id || uid(), text: t.text, pid: t.pid || null, date: k.slice(2), done: !!t.done }));
+  }
+  return { list: out, migrated: true };
 }
 
-// ---- render ----
+// ---- header ----
 function renderHeader(){
-  const d = fromYmd(date), t = today();
-  const label = d.toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long' });
-  $('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
-  const rel = date === t ? 'Сьогодні' : date === shift(t, 1) ? 'Завтра' : date === shift(t, -1) ? 'Вчора' : 'Натисни — повернутись на сьогодні';
-  const vis = visibleTasks(), done = vis.filter(x => x.done).length;
-  $('dateSub').textContent = vis.length ? `${rel} · ${done}/${vis.length}` : rel;
-  $('bar').style.width = vis.length ? (done / vis.length * 100) + '%' : '0';
+  $('tabDay').classList.toggle('on', mode === 'day');
+  $('tabList').classList.toggle('on', mode === 'list');
+  $('dayHead').classList.toggle('hidden', mode !== 'day');
+  $('listHead').classList.toggle('hidden', mode !== 'list');
+  if (mode === 'day') {
+    const d = fromYmd(date), t = today();
+    const label = d.toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long' });
+    $('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+    const rel = date === t ? 'Сьогодні' : date === shift(t, 1) ? 'Завтра' : date === shift(t, -1) ? 'Вчора' : 'Натисни — повернутись на сьогодні';
+    const vis = byProject(scopeTasks()), done = vis.filter(x => x.done).length;
+    $('dateSub').textContent = vis.length ? `${rel} · ${done}/${vis.length}` : rel;
+    $('bar').style.width = vis.length ? (done / vis.length * 100) + '%' : '0';
+  } else {
+    const vis = byProject(tasks), open = vis.filter(x => !x.done);
+    const nodate = open.filter(x => !x.date).length;
+    $('listSub').textContent = `${open.length} активних` + (nodate ? ` · ${nodate} без дати` : '');
+  }
 }
 
-function countOpen(id){ const ids = subtree(id); return tasks.filter(x => !x.done && ids.has(x.pid)).length; }
-
+// ---- project levels ----
+function countOpen(id){ const ids = subtree(id); return scopeTasks().filter(x => !x.done && ids.has(x.pid)).length; }
 function chip(row, { label, on, parentOn, color, count, cls = '', onClick }){
   const b = document.createElement('button');
   b.className = 'chip ' + cls + (on ? ' on' : '') + (parentOn ? ' parent-on' : '');
@@ -198,156 +290,225 @@ function chip(row, { label, on, parentOn, color, count, cls = '', onClick }){
   b.onclick = onClick;
   row.append(b);
 }
-
 function renderLevels(){
   const box = $('levels'); box.innerHTML = '';
-  // level 0 + one level under each selected node
-  const parents = [null, ...path];
-  parents.forEach((pid, level) => {
+  [null, ...path].forEach((pid, level) => {
     const row = document.createElement('div');
     row.className = 'chips' + (level ? ' sub' : '');
     if (level) row.style.paddingLeft = (16 + (level - 1) * 14) + 'px';
     const children = kids(pid);
     if (level) { const br = document.createElement('span'); br.className = 'branch'; br.textContent = '↳'; row.append(br); }
-
-    if (level === 0) {
-      chip(row, { label: 'Всі', on: path.length === 0, onClick: () => { path = []; haptic(); render(); } });
-    } else if (children.length) {
-      chip(row, { label: 'Усе', on: path.length === level, onClick: () => { path = path.slice(0, level); haptic(); render(); } });
-    }
+    if (level === 0) chip(row, { label: 'Всі', on: path.length === 0, onClick: () => { path = []; haptic(); render(); } });
+    else if (children.length) chip(row, { label: 'Усе', on: path.length === level, onClick: () => { path = path.slice(0, level); haptic(); render(); } });
     children.forEach(c => {
-      const selectedHere = path[level] === c.id;
-      const isLeafSel = selectedHere && path.length === level + 1;
+      const here = path[level] === c.id, leaf = here && path.length === level + 1;
       chip(row, {
-        label: c.name, color: c.color, count: countOpen(c.id),
-        on: isLeafSel, parentOn: selectedHere && !isLeafSel,
-        onClick: () => {
-          if (isLeafSel) return openSheet(c);
-          path = [...path.slice(0, level), c.id]; haptic(); render();
-        }
+        label: c.name, color: c.color, count: countOpen(c.id), on: leaf, parentOn: here && !leaf,
+        onClick: () => { if (leaf) return openProject(c); path = [...path.slice(0, level), c.id]; haptic(); render(); }
       });
     });
-    chip(row, {
-      label: level ? '+ Підпроєкт' : '+ Проєкт', cls: 'add-p',
-      onClick: () => openSheet(null, pid)
-    });
+    chip(row, { label: level ? '+ Підпроєкт' : '+ Проєкт', cls: 'add-p', onClick: () => openProject(null, pid) });
     box.append(row);
   });
 }
 
-function taskEl(t){
+// ---- task rows ----
+function taskEl(t, { showProject = false, showDate = false } = {}){
   const row = document.createElement('div');
   row.className = 'task' + (t.done ? ' done' : '');
   const c = document.createElement('button'); c.className = 'check'; c.innerHTML = CHECK; c.setAttribute('aria-label', 'Виконано');
+  c.onclick = () => toggle(t.id);
+  const body = document.createElement('div'); body.className = 'body';
   const s = document.createElement('div'); s.className = 'txt'; s.textContent = t.text;
-  const d = document.createElement('button'); d.className = 'del'; d.textContent = '×'; d.setAttribute('aria-label', 'Видалити');
-  c.onclick = s.onclick = () => toggle(t.id);
-  d.onclick = () => removeTask(t.id);
-  row.append(c, s, d);
+  body.append(s);
+  const meta = document.createElement('div'); meta.className = 'meta';
+  const p = byId(t.pid);
+  if (showProject && p) {
+    const m = document.createElement('span');
+    const d = document.createElement('i'); d.className = 'dot'; d.style.background = p.color;
+    m.append(d, document.createTextNode(chain(p.id).map(n => n.name).join(' › ')));
+    meta.append(m);
+  }
+  if (showDate && t.date) {
+    const m = document.createElement('span');
+    if (!t.done && t.date < today()) m.className = 'late';
+    m.textContent = '📅 ' + dayLabel(t.date);
+    meta.append(m);
+  }
+  if (meta.childNodes.length) body.append(meta);
+  body.onclick = () => openTask(t);
+  const e = document.createElement('span'); e.className = 'edit'; e.textContent = '›';
+  e.onclick = () => openTask(t);
+  row.append(c, body, e);
   return row;
 }
 const sortTasks = arr => [...arr.filter(x => !x.done), ...arr.filter(x => x.done)];
-
-function groupHeader(box, color, text){
-  const h = document.createElement('div'); h.className = 'group';
-  const d = document.createElement('span'); d.className = 'dot'; d.style.background = color;
-  h.append(d, document.createTextNode(text));
+function groupHeader(box, text, color, cls = ''){
+  const h = document.createElement('div'); h.className = 'group ' + cls;
+  if (color) { const d = document.createElement('span'); d.className = 'dot'; d.style.background = color; h.append(d); }
+  h.append(document.createTextNode(text));
   box.append(h);
 }
+const empty = (box, html) => box.insertAdjacentHTML('beforeend', `<div class="empty">${html}</div>`);
 
-function renderList(){
-  const box = $('list'); box.innerHTML = '';
-  const f = filter();
-  const undone = tasks.filter(x => !x.done);
+// ---- day view ----
+function renderDay(box){
+  const f = filter(), vis = byProject(scopeTasks());
+  const undone = vis.filter(x => !x.done);
   if (date < today() && undone.length) {
     const b = document.createElement('button'); b.className = 'carry';
     b.textContent = `Перенести незроблені (${undone.length}) на сьогодні →`;
-    b.onclick = carryOver; box.append(b);
+    b.onclick = () => carryOver(undone); box.append(b);
   }
-
-  const vis = visibleTasks();
   if (!vis.length) {
-    box.insertAdjacentHTML('beforeend', f === 'all'
-      ? '<div class="empty">На цей день задач немає.<br>Додай першу внизу 👇</div>'
-      : '<div class="empty">Тут поки пусто.<br>Натисни на виділений проєкт ще раз, щоб змінити його.</div>');
+    const nodate = byProject(tasks).filter(x => !x.done && !x.date).length;
+    empty(box, 'На цей день задач немає.' + (nodate ? `<br>У «Списку» є ${nodate} без дати — можна призначити їх на цей день.` : '<br>Додай першу внизу 👇'));
     return;
   }
-
-  // nodes in tree order
   const nodes = f === 'all' ? dfs(null).map(x => x.p) : [byId(f), ...dfs(f).map(x => x.p)];
   const base = f === 'all' ? 0 : chain(f).length;
   const groups = nodes.map(p => ({ p, items: vis.filter(x => x.pid === p.id) })).filter(g => g.items.length);
-  if (f === 'all') {
-    const orphans = tasks.filter(x => !byId(x.pid));
-    if (orphans.length) groups.push({ p: null, items: orphans });
-  }
+  if (f === 'all') { const none = vis.filter(x => !byId(x.pid)); if (none.length) groups.push({ p: null, items: none }); }
   const single = groups.length === 1 && groups[0].p && groups[0].p.id === f;
-
   groups.forEach(g => {
-    if (!single) {
-      if (!g.p) groupHeader(box, 'var(--hint)', 'Без проєкту');
-      else {
-        const names = g.p.id === f ? [g.p.name] : chain(g.p.id).slice(base).map(n => n.name);
-        groupHeader(box, g.p.color, names.join(' › '));
-      }
-    } else box.insertAdjacentHTML('beforeend', '<div style="height:12px"></div>');
+    if (single) box.insertAdjacentHTML('beforeend', '<div style="height:12px"></div>');
+    else if (!g.p) groupHeader(box, 'Без проєкту', 'var(--hint)');
+    else groupHeader(box, g.p.id === f ? g.p.name : chain(g.p.id).slice(base).map(n => n.name).join(' › '), g.p.color);
     sortTasks(g.items).forEach(x => box.append(taskEl(x)));
   });
 }
 
-function renderSelect(){
-  const sel = $('projSel'), f = filter();
-  const opts = f === 'all' ? dfs(null) : [{ p: byId(f), depth: 0 }, ...dfs(f, 1)];
-  const prev = sel.value;
-  sel.innerHTML = '';
-  opts.forEach(({ p, depth }) => {
-    const o = document.createElement('option'); o.value = p.id;
-    o.textContent = '\u00A0\u00A0'.repeat(depth) + (depth ? '↳ ' : '') + p.name;
-    sel.append(o);
+// ---- list view ----
+function renderListView(box){
+  const vis = byProject(tasks), t = today();
+  const open = vis.filter(x => !x.done), done = vis.filter(x => x.done);
+  const showProject = filter() === 'all' || kids(filter()).length > 0;
+  if (!open.length && !done.length) { empty(box, 'Список порожній.<br>Пиши задачі внизу — без дати й без проєкту, а потім тапни задачу, щоб прив\'язати.'); return; }
+  const nodate = open.filter(x => !x.date);
+  const late = open.filter(x => x.date && x.date < t).sort((a, b) => a.date.localeCompare(b.date));
+  const upcoming = open.filter(x => x.date && x.date >= t).sort((a, b) => a.date.localeCompare(b.date));
+  if (nodate.length) { groupHeader(box, `Без дати · ${nodate.length}`); nodate.forEach(x => box.append(taskEl(x, { showProject }))); }
+  if (late.length) { groupHeader(box, `Прострочені · ${late.length}`, null, 'warn'); late.forEach(x => box.append(taskEl(x, { showProject, showDate: true }))); }
+  let cur = null;
+  upcoming.forEach(x => {
+    if (x.date !== cur) { cur = x.date; groupHeader(box, dayLabel(cur)); }
+    box.append(taskEl(x, { showProject }));
   });
-  if (lastSelFilter !== f) { sel.value = f === 'all' ? (opts[0] && opts[0].p.id) : f; lastSelFilter = f; }
-  else if (opts.some(o => o.p.id === prev)) sel.value = prev;
-  sel.style.display = opts.length > 1 ? '' : 'none';
+  if (!open.length) empty(box, 'Усе виконано 🎉');
+  if (done.length) {
+    const b = document.createElement('button'); b.className = 'more';
+    b.textContent = showDone ? 'Сховати виконані' : `Показати виконані (${done.length})`;
+    b.onclick = () => { showDone = !showDone; render(); };
+    box.append(b);
+    if (showDone) {
+      groupHeader(box, 'Виконані');
+      done.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')).forEach(x => box.append(taskEl(x, { showProject, showDate: true })));
+    }
+  }
 }
 
-function render(){ path = path.filter(byId); renderHeader(); renderLevels(); renderList(); renderSelect(); }
+// ---- add form ----
+function projectOptions(sel, { includeNone, rootId }){
+  sel.innerHTML = '';
+  const add = (v, label) => { const o = document.createElement('option'); o.value = v; o.textContent = label; sel.append(o); };
+  if (includeNone) add('', 'Без проєкту');
+  const opts = rootId ? [{ p: byId(rootId), depth: 0 }, ...dfs(rootId, 1)] : dfs(null);
+  opts.forEach(({ p, depth }) => add(p.id, '  '.repeat(depth) + (depth ? '↳ ' : '') + p.name));
+  return sel.options.length;
+}
+function renderAdd(){
+  const sel = $('projSel'), f = filter(), prev = sel.value;
+  const n = projectOptions(sel, f === 'all' ? { includeNone: true } : { rootId: f });
+  const key = f + '|' + mode;
+  if (lastSelKey !== key) { sel.value = f === 'all' ? '' : f; lastSelKey = key; }
+  else if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  sel.style.display = n > 1 ? '' : 'none';
+  $('taskInput').placeholder = mode === 'day' ? 'Задача на цей день…' : 'Нова задача без дати…';
+}
+
+function render(){
+  path = path.filter(byId);
+  renderHeader(); renderLevels();
+  const box = $('list'); box.innerHTML = '';
+  if (mode === 'day') renderDay(box); else renderListView(box);
+  renderAdd();
+}
 
 // ---- actions ----
 async function toggle(id){
   const t = tasks.find(x => x.id === id); if (!t) return;
   t.done = !t.done; haptic(t.done ? 'medium' : 'light');
-  render(); await saveDay();
+  render(); saveTasks();
 }
-async function removeTask(id){
-  tasks = tasks.filter(x => x.id !== id); haptic();
-  render(); await saveDay();
+function carryOver(list){
+  const t = today();
+  list.forEach(x => { x.date = t; });
+  haptic('medium'); date = t; render(); saveTasks();
 }
-async function carryOver(){
-  const t = today(), moving = tasks.filter(x => !x.done);
-  const target = parse(await store.get('d_' + t), []);
-  moving.forEach(x => target.push({ ...x, id: uid() }));
-  tasks = tasks.filter(x => x.done);
-  await saveDay(t, target); await saveDay();
-  haptic('medium');
-  date = t; loadDay();
-}
-
-$('addForm').onsubmit = async e => {
+$('addForm').onsubmit = e => {
   e.preventDefault();
   const inp = $('taskInput'), text = inp.value.trim();
   if (!text) return;
   const sel = $('projSel'), f = filter();
-  const pid = (sel.style.display !== 'none' && sel.value) || (f !== 'all' ? f : (projects[0] && projects[0].id));
-  tasks.push({ id: uid(), text, pid, done: false });
+  const pid = sel.style.display !== 'none' ? (sel.value || null) : (f !== 'all' ? f : null);
+  tasks.push({ id: uid(), text, pid, date: mode === 'day' ? date : null, done: false });
   inp.value = ''; haptic();
-  render(); await saveDay();
+  render(); saveTasks();
+};
+$('tabDay').onclick = () => { if (mode !== 'day') { mode = 'day'; haptic(); render(); window.scrollTo(0, 0); } };
+$('tabList').onclick = () => { if (mode !== 'list') { mode = 'list'; haptic(); render(); window.scrollTo(0, 0); } };
+$('prev').onclick = () => { date = shift(date, -1); haptic(); render(); };
+$('next').onclick = () => { date = shift(date, 1); haptic(); render(); };
+$('dateBtn').onclick = () => { if (date !== today()) { date = today(); haptic(); render(); } };
+
+// ---- two-tap delete (no native dialogs, they don't open in some Telegram clients) ----
+function resetDel(btn){ clearTimeout(btn._t); btn.dataset.armed = ''; btn.textContent = 'Видалити'; }
+function armDelete(btn, action){
+  if (btn.dataset.armed) { resetDel(btn); action(); return; }
+  btn.dataset.armed = '1'; btn.textContent = 'Точно видалити?'; haptic('medium');
+  clearTimeout(btn._t); btn._t = setTimeout(() => resetDel(btn), 3000);
+}
+
+// ---- task editor ----
+let editingTask = null;
+function syncQuick(){
+  const v = $('tDate').value, t = today();
+  document.querySelectorAll('#tQuick button').forEach(b => {
+    const q = b.dataset.q;
+    b.classList.toggle('on', (q === 'none' && !v) || (q === 'today' && v === t) || (q === 'tomorrow' && v === shift(t, 1)));
+  });
+}
+document.querySelectorAll('#tQuick button').forEach(b => b.onclick = () => {
+  const q = b.dataset.q, t = today();
+  $('tDate').value = q === 'none' ? '' : q === 'today' ? t : shift(t, 1);
+  syncQuick();
+});
+$('tDate').onchange = syncQuick;
+function openTask(t){
+  editingTask = t; resetDel($('tDel'));
+  $('tText').value = t.text;
+  projectOptions($('tProj'), { includeNone: true });
+  $('tProj').value = byId(t.pid) ? t.pid : '';
+  $('tDate').value = t.date || '';
+  syncQuick();
+  $('tSheet').classList.remove('hidden');
+}
+const closeTask = () => { $('tSheet').classList.add('hidden'); editingTask = null; };
+$('tBg').onclick = closeTask;
+$('tSave').onclick = () => {
+  const t = editingTask; if (!t) return;
+  const text = $('tText').value.trim(); if (!text) return $('tText').focus();
+  t.text = text;
+  t.pid = $('tProj').value || null;
+  t.date = $('tDate').value || null;
+  closeTask(); haptic('medium'); render(); saveTasks();
+};
+$('tDel').onclick = () => {
+  const t = editingTask; if (!t) return;
+  armDelete($('tDel'), () => { tasks = tasks.filter(x => x.id !== t.id); closeTask(); haptic(); render(); saveTasks(); });
 };
 
-$('prev').onclick = () => { date = shift(date, -1); haptic(); loadDay(); };
-$('next').onclick = () => { date = shift(date, 1); haptic(); loadDay(); };
-$('dateBtn').onclick = () => { if (date !== today()) { date = today(); haptic(); loadDay(); } };
-
-// ---- project sheet ----
+// ---- project editor ----
 let editing = null, newParent = null, pickColor = COLORS[0];
 function drawSwatches(){
   const box = $('swatches'); box.innerHTML = '';
@@ -357,44 +518,45 @@ function drawSwatches(){
     box.append(b);
   });
 }
-function openSheet(p, parentId = null){
-  editing = p; newParent = p ? null : parentId;
+function openProject(p, parentId = null){
+  editing = p; newParent = p ? null : parentId; resetDel($('pDel'));
   const par = byId(p ? p.parent : parentId);
-  $('sheetTitle').textContent = p ? (p.parent ? 'Підпроєкт' : 'Проєкт') : (parentId ? 'Новий підпроєкт' : 'Новий проєкт');
-  $('sheetSub').textContent = par ? 'У: ' + chain(par.id).map(n => n.name).join(' › ') : '';
-  $('sheetSub').style.display = par ? '' : 'none';
-  $('sheetName').value = p ? p.name : '';
+  $('pTitle').textContent = p ? (p.parent ? 'Підпроєкт' : 'Проєкт') : (parentId ? 'Новий підпроєкт' : 'Новий проєкт');
+  $('pSub').textContent = par ? 'У: ' + chain(par.id).map(n => n.name).join(' › ') : '';
+  $('pSub').classList.toggle('hidden', !par);
+  $('pName').value = p ? p.name : '';
   pickColor = p ? p.color : (par ? par.color : COLORS[kids(null).length % COLORS.length]);
-  $('sheetDel').classList.toggle('hidden', !p || projects.length < 2);
+  $('pDel').classList.toggle('hidden', !p);
   drawSwatches();
-  $('sheet').classList.remove('hidden');
-  setTimeout(() => $('sheetName').focus(), 50);
+  $('pSheet').classList.remove('hidden');
+  setTimeout(() => $('pName').focus(), 50);
 }
-const closeSheet = () => { $('sheet').classList.add('hidden'); editing = null; newParent = null; };
-$('sheetBg').onclick = closeSheet;
-$('sheetSave').onclick = async () => {
-  const name = $('sheetName').value.trim(); if (!name) return $('sheetName').focus();
+const closeProject = () => { $('pSheet').classList.add('hidden'); editing = null; newParent = null; };
+$('pBg').onclick = closeProject;
+$('pSave').onclick = async () => {
+  const name = $('pName').value.trim(); if (!name) return $('pName').focus();
   if (editing) { editing.name = name; editing.color = pickColor; }
   else {
     const p = { id: uid(), name, color: pickColor, parent: newParent || null };
     projects.push(p);
     path = chain(p.id).map(n => n.id);
   }
-  closeSheet(); haptic('medium'); render(); await saveProjects();
+  closeProject(); haptic('medium'); render(); await saveProjects();
 };
-$('sheetName').onkeydown = e => { if (e.key === 'Enter') $('sheetSave').click(); };
-$('sheetDel').onclick = () => {
+$('pName').onkeydown = e => { if (e.key === 'Enter') $('pSave').click(); };
+$('pDel').onclick = () => {
   const p = editing; if (!p) return;
   const hasKids = kids(p.id).length > 0;
-  const msg = `Видалити «${p.name}»?` + (hasKids ? ' Його підпроєкти піднімуться на рівень вище.' : '') + ' Задачі залишаться в «Без проєкту».';
-  const doDelete = async ok => {
-    if (!ok) return;
+  const msg = `«${p.name}» буде видалено.` + (hasKids ? ' Його підпроєкти піднімуться на рівень вище.' : '') + (p.parent ? ` Його задачі перейдуть у «${byId(p.parent) ? byId(p.parent).name : ''}».` : ' Його задачі залишаться без проєкту.');
+  const go = async () => {
     kids(p.id).forEach(k => { k.parent = p.parent || null; });
     projects = projects.filter(x => x.id !== p.id);
+    tasks.forEach(t => { if (t.pid === p.id) t.pid = p.parent || null; });
     const i = path.indexOf(p.id); if (i >= 0) path = path.slice(0, i);
-    closeSheet(); render(); await saveProjects();
+    closeProject(); render(); await saveProjects(); saveTasks();
   };
-  if (ver('6.2')) tg.showConfirm(msg, doDelete); else doDelete(confirm(msg));
+  if (!$('pDel').dataset.armed) { $('pSub').textContent = msg; $('pSub').classList.remove('hidden'); }
+  armDelete($('pDel'), go);
 };
 
 // ---- start ----
@@ -402,7 +564,10 @@ $('sheetDel').onclick = () => {
   projects = parse(await store.get('projects'), []);
   projects.forEach(p => { if (p.parent === undefined) p.parent = null; });
   if (!projects.length) { projects = [{ id: uid(), name: 'Загальне', color: COLORS[0], parent: null }]; await saveProjects(); }
-  await loadDay();
+  const { list, migrated } = await loadTasks();
+  tasks = list;
+  render();
+  if (migrated) saveTasks();
 })();
 </script>
 </body>
