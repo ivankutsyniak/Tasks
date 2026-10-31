@@ -25,7 +25,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{padding-bottom:96px;min-height:100vh}
+body{padding-bottom:120px;min-height:100vh}
 button{font:inherit;cursor:pointer}
 
 header{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:10px;border-bottom:1px solid var(--card)}
@@ -85,7 +85,7 @@ body.dragging{user-select:none;-webkit-user-select:none;overflow:hidden}
 .carry,.more{width:100%;margin:12px 0 0;padding:11px;border-radius:12px;border:1px dashed var(--accent);background:none;color:var(--accent);font-size:14px}
 .more{border-style:solid;border-color:var(--card);color:var(--hint)}
 
-form.add{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--card)}
+form.add{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:8px;padding:12px 16px calc(28px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--card)}
 .add input,.add select{height:44px;border:0;border-radius:12px;background:var(--card);color:var(--text);font-size:16px;padding:0 12px;outline:none}
 .add input{flex:1;min-width:0}
 .add select{max-width:120px;-webkit-appearance:none;appearance:none}
@@ -536,7 +536,7 @@ function autoScroll(){
   if (!drag) return;
   const y = drag.lastY, h = window.innerHeight, top = $('list').getBoundingClientRect().top;
   let v = 0;
-  if (y < Math.max(top, 0) + 60) v = -8; else if (y > h - 130) v = 8;
+  if (y < Math.max(top, 0) + 60) v = -8; else if (y > h - 150) v = 8;
   if (v) { const before = window.scrollY; window.scrollBy(0, v); if (window.scrollY !== before) layoutDrag(); }
 }
 function endDrag(){
