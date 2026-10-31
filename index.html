@@ -73,6 +73,14 @@ main{padding:0 16px}
 .meta .late{color:var(--danger)}
 .meta .dot{width:7px;height:7px}
 .edit{flex:none;color:var(--hint);font-size:18px;line-height:1}
+.grip{flex:none;width:30px;height:36px;margin:-6px -6px -6px 0;display:grid;place-items:center;color:var(--hint);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.task{position:relative}
+.task.drag{z-index:4;box-shadow:0 8px 24px rgba(0,0,0,.22);transition:none;animation:none}
+.task.shift{transition:transform .15s ease}
+body.dragging{user-select:none;-webkit-user-select:none;overflow:hidden}
+.rank{flex:none;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--bg);color:var(--hint);font-size:12px;font-weight:600;display:grid;place-items:center;margin-right:-4px}
+.rank.top{background:var(--accent);color:var(--accent-text)}
+.meta .note{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty{text-align:center;color:var(--hint);padding:48px 0;font-size:15px}
 .carry,.more{width:100%;margin:12px 0 0;padding:11px;border-radius:12px;border:1px dashed var(--accent);background:none;color:var(--accent);font-size:14px}
 .more{border-style:solid;border-color:var(--card);color:var(--hint)}
@@ -160,6 +168,8 @@ textarea.field{resize:none;line-height:1.35}
       <button type="button" data-q="tomorrow">Завтра</button>
       <input type="date" id="tDate" aria-label="Інша дата">
     </div>
+    <label class="lbl" for="tNote">Коментар</label>
+    <textarea class="field" id="tNote" rows="3" maxlength="2000" placeholder="Деталі, посилання, нотатки…"></textarea>
     <div class="row">
       <button class="btn ghost" id="tDel">Видалити</button>
       <button class="btn" id="tSave">Зберегти</button>
@@ -313,9 +323,10 @@ function renderLevels(){
 }
 
 // ---- task rows ----
-function taskEl(t, { showProject = false, showDate = false } = {}){
+function taskEl(t, { showProject = false, showDate = false, group = null, rank = 0 } = {}){
   const row = document.createElement('div');
   row.className = 'task' + (t.done ? ' done' : '');
+  row.dataset.id = t.id;
   const c = document.createElement('button'); c.className = 'check'; c.innerHTML = CHECK; c.setAttribute('aria-label', 'Виконано');
   c.onclick = () => toggle(t.id);
   const body = document.createElement('div'); body.className = 'body';
@@ -335,11 +346,27 @@ function taskEl(t, { showProject = false, showDate = false } = {}){
     m.textContent = '📅 ' + dayLabel(t.date);
     meta.append(m);
   }
+  if (t.note) {
+    const m = document.createElement('span'); m.className = 'note';
+    m.textContent = '💬 ' + t.note.split('\n')[0];
+    meta.append(m);
+  }
   if (meta.childNodes.length) body.append(meta);
   body.onclick = () => openTask(t);
-  const e = document.createElement('span'); e.className = 'edit'; e.textContent = '›';
-  e.onclick = () => openTask(t);
-  row.append(c, body, e);
+  row.append(c);
+  if (rank && !t.done) { const r = document.createElement('span'); r.className = 'rank' + (rank === 1 ? ' top' : ''); r.textContent = rank; row.append(r); }
+  row.append(body);
+  if (group && !t.done) {
+    row.dataset.g = group;
+    const g = document.createElement('span'); g.className = 'grip'; g.setAttribute('aria-label', 'Перетягнути');
+    g.innerHTML = '<svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor"><circle cx="4" cy="4" r="1.8"/><circle cx="10" cy="4" r="1.8"/><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="4" cy="16" r="1.8"/><circle cx="10" cy="16" r="1.8"/></svg>';
+    g.addEventListener('pointerdown', ev => startDrag(ev, row));
+    row.append(g);
+  } else {
+    const e = document.createElement('span'); e.className = 'edit'; e.textContent = '›';
+    e.onclick = () => openTask(t);
+    row.append(e);
+  }
   return row;
 }
 const sortTasks = arr => [...arr.filter(x => !x.done), ...arr.filter(x => x.done)];
@@ -370,11 +397,11 @@ function renderDay(box){
   const groups = nodes.map(p => ({ p, items: vis.filter(x => x.pid === p.id) })).filter(g => g.items.length);
   if (f === 'all') { const none = vis.filter(x => !byId(x.pid)); if (none.length) groups.push({ p: null, items: none }); }
   const single = groups.length === 1 && groups[0].p && groups[0].p.id === f;
-  groups.forEach(g => {
+  groups.forEach((g, gi) => {
     if (single) box.insertAdjacentHTML('beforeend', '<div style="height:12px"></div>');
     else if (!g.p) groupHeader(box, 'Без проєкту', 'var(--hint)');
     else groupHeader(box, g.p.id === f ? g.p.name : chain(g.p.id).slice(base).map(n => n.name).join(' › '), g.p.color);
-    sortTasks(g.items).forEach(x => box.append(taskEl(x)));
+    sortTasks(g.items).forEach(x => box.append(taskEl(x, { group: 'p:' + (g.p ? g.p.id : '-') })));
   });
 }
 
@@ -387,12 +414,12 @@ function renderListView(box){
   const nodate = open.filter(x => !x.date);
   const late = open.filter(x => x.date && x.date < t).sort((a, b) => a.date.localeCompare(b.date));
   const upcoming = open.filter(x => x.date && x.date >= t).sort((a, b) => a.date.localeCompare(b.date));
-  if (nodate.length) { groupHeader(box, `Без дати · ${nodate.length}`); nodate.forEach(x => box.append(taskEl(x, { showProject }))); }
-  if (late.length) { groupHeader(box, `Прострочені · ${late.length}`, null, 'warn'); late.forEach(x => box.append(taskEl(x, { showProject, showDate: true }))); }
+  if (nodate.length) { groupHeader(box, `Без дати · ${nodate.length} · за пріоритетом`); nodate.forEach((x, i) => box.append(taskEl(x, { showProject, group: 'nodate', rank: i + 1 }))); }
+  if (late.length) { groupHeader(box, `Прострочені · ${late.length}`, null, 'warn'); late.forEach(x => box.append(taskEl(x, { showProject, showDate: true, group: 'd:' + x.date }))); }
   let cur = null;
   upcoming.forEach(x => {
     if (x.date !== cur) { cur = x.date; groupHeader(box, dayLabel(cur)); }
-    box.append(taskEl(x, { showProject }));
+    box.append(taskEl(x, { showProject, group: 'd:' + x.date }));
   });
   if (!open.length) empty(box, 'Усе виконано 🎉');
   if (done.length) {
@@ -469,6 +496,68 @@ function armDelete(btn, action){
   clearTimeout(btn._t); btn._t = setTimeout(() => resetDel(btn), 3000);
 }
 
+// ---- drag to reorder (order in the tasks array = priority) ----
+let drag = null;
+function startDrag(ev, row){
+  if (drag || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+  ev.preventDefault();
+  const sibs = [...document.querySelectorAll('.task[data-g]')].filter(r => r.dataset.g === row.dataset.g);
+  if (sibs.length < 2) return;
+  const from = sibs.indexOf(row);
+  const step = row.offsetHeight + 8;
+  drag = { row, sibs, from, to: from, step, startY: ev.clientY, startScroll: window.scrollY, lastY: ev.clientY,
+           mids: sibs.map(r => { const b = r.getBoundingClientRect(); return b.top + window.scrollY + b.height / 2; }) };
+  if (ver('7.7')) tg.disableVerticalSwipes();
+  row.classList.add('drag'); document.body.classList.add('dragging');
+  sibs.forEach(r => { if (r !== row) r.classList.add('shift'); });
+  haptic('medium');
+  window.addEventListener('pointermove', onDragMove, { passive: false });
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  drag.timer = setInterval(autoScroll, 16);
+}
+function layoutDrag(){
+  const d = drag, dy = d.lastY - d.startY + (window.scrollY - d.startScroll);
+  d.row.style.transform = `translateY(${dy}px)`;
+  const center = d.mids[d.from] + dy;
+  let to = 0;
+  d.mids.forEach((m, i) => { if (i !== d.from && m < center) to++; });
+  if (to !== d.to) { d.to = to; haptic('light'); }
+  d.sibs.forEach((r, i) => {
+    if (i === d.from) return;
+    let s = 0;
+    if (d.from < d.to && i > d.from && i <= d.to) s = -d.step;
+    if (d.from > d.to && i < d.from && i >= d.to) s = d.step;
+    r.style.transform = s ? `translateY(${s}px)` : '';
+  });
+}
+function onDragMove(ev){ if (!drag) return; ev.preventDefault(); drag.lastY = ev.clientY; layoutDrag(); }
+function autoScroll(){
+  if (!drag) return;
+  const y = drag.lastY, h = window.innerHeight, top = $('list').getBoundingClientRect().top;
+  let v = 0;
+  if (y < Math.max(top, 0) + 60) v = -8; else if (y > h - 130) v = 8;
+  if (v) { const before = window.scrollY; window.scrollBy(0, v); if (window.scrollY !== before) layoutDrag(); }
+}
+function endDrag(){
+  const d = drag; if (!d) return; drag = null;
+  clearInterval(d.timer);
+  window.removeEventListener('pointermove', onDragMove);
+  window.removeEventListener('pointerup', endDrag);
+  window.removeEventListener('pointercancel', endDrag);
+  if (ver('7.7')) tg.enableVerticalSwipes();
+  document.body.classList.remove('dragging');
+  if (d.to !== d.from) {
+    const ids = d.sibs.map(r => r.dataset.id);
+    const moved = ids.splice(d.from, 1)[0]; ids.splice(d.to, 0, moved);
+    const slots = ids.map(id => tasks.findIndex(x => x.id === id)).sort((a, b) => a - b);
+    const objs = ids.map(id => tasks.find(x => x.id === id));
+    slots.forEach((s, i) => { tasks[s] = objs[i]; });
+    haptic('medium'); saveTasks();
+  }
+  render();
+}
+
 // ---- task editor ----
 let editingTask = null;
 function syncQuick(){
@@ -490,6 +579,7 @@ function openTask(t){
   projectOptions($('tProj'), { includeNone: true });
   $('tProj').value = byId(t.pid) ? t.pid : '';
   $('tDate').value = t.date || '';
+  $('tNote').value = t.note || '';
   syncQuick();
   $('tSheet').classList.remove('hidden');
 }
@@ -501,6 +591,8 @@ $('tSave').onclick = () => {
   t.text = text;
   t.pid = $('tProj').value || null;
   t.date = $('tDate').value || null;
+  const note = $('tNote').value.trim();
+  if (note) t.note = note; else delete t.note;
   closeTask(); haptic('medium'); render(); saveTasks();
 };
 $('tDel').onclick = () => {
